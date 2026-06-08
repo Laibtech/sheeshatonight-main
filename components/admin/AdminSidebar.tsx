@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { LayoutDashboard, ShoppingCart, Store, Users, Package, BarChart3, Wallet, FileText, Bell, Settings, LogOut, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -68,8 +69,17 @@ export const AdminSidebar: React.FC = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex-col p-6 z-40">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 flex-col p-6 z-40">
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+          </div>
           <h2 className="text-xl font-black text-slate-900">Admin Panel</h2>
           <p className="text-xs text-slate-500 mt-1">Management System</p>
         </div>
@@ -79,9 +89,18 @@ export const AdminSidebar: React.FC = () => {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-40">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 z-40">
         <div className="flex items-center justify-between h-16 px-4">
-          <h1 className="text-xl font-black text-slate-900">Admin</h1>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <h1 className="text-xl font-black text-slate-900">Admin</h1>
+          </div>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="p-2 hover:bg-slate-100 rounded-lg"
@@ -92,7 +111,7 @@ export const AdminSidebar: React.FC = () => {
 
         {/* Mobile Navigation */}
         {mobileOpen && (
-          <nav className="bg-white border-t border-slate-200 p-4 space-y-2 max-h-96 overflow-y-auto">
+          <nav className="bg-gradient-to-b from-slate-50 to-white border-t border-slate-200 p-4 space-y-2 max-h-96 overflow-y-auto">
             <NavContent />
           </nav>
         )}

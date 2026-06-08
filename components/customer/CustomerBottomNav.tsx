@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Home, Grid, Search, ShoppingBag, Heart, Clock, MapPin, Wallet, User, Bell, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,7 +38,7 @@ export const CustomerBottomNav: React.FC = () => {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white to-slate-50 border-t border-slate-200 z-40 lg:hidden">
         <div className="grid grid-cols-5 gap-1">
           {primaryItems.map((item) => {
             const Icon = item.icon;
@@ -61,13 +62,19 @@ export const CustomerBottomNav: React.FC = () => {
       </nav>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-slate-950 border-r border-slate-800 flex-col p-6 z-40 text-slate-100">
-        <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-800">
-          <img src="/logo.png" alt="SheeshaTonight" className="h-10 w-auto" />
-          <div>
-            <div className="text-base font-black tracking-widest">SheeshaTonight</div>
-            <p className="text-xs text-slate-400 mt-1">Customer Dashboard</p>
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 flex-col p-6 z-40">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
           </div>
+          <h2 className="text-xl font-black text-slate-900">Customer</h2>
+          <p className="text-xs text-slate-500 mt-1">Shopping Dashboard</p>
         </div>
         <nav className="flex-1 overflow-y-auto space-y-2">
           {CUSTOMER_NAVIGATION.map((item) => {
@@ -77,14 +84,14 @@ export const CustomerBottomNav: React.FC = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition ${
                   isActive
-                    ? 'bg-amber-500/15 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.12)]'
-                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    ? 'bg-amber-500/20 text-amber-600 font-semibold'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <Icon size={20} className={isActive ? 'text-amber-300' : 'text-slate-400'} />
-                <span className="text-sm font-medium">{item.label}</span>
+                <Icon size={20} />
+                <span className="text-sm">{item.label}</span>
               </Link>
             );
           })}
@@ -92,9 +99,9 @@ export const CustomerBottomNav: React.FC = () => {
 
         <button
           onClick={handleLogout}
-          className="mt-auto flex items-center gap-3 px-4 py-3 w-full rounded-2xl bg-slate-900 text-slate-300 hover:bg-slate-800 transition text-sm font-medium"
+          className="mt-auto flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-700 hover:bg-red-50 transition text-sm font-medium"
         >
-          <LogOut size={20} className="text-slate-300" />
+          <LogOut size={20} />
           <span>Logout</span>
         </button>
       </aside>

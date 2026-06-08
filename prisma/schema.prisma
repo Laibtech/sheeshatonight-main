@@ -11,18 +11,21 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  name      String
-  email     String     @unique
-  phone     String?    @unique
-  password  String     // Hash in production
-  role      UserRole   @default(CUSTOMER)
-  dob       DateTime?
-  locale    String     @default("en-AE")
-  verified  Boolean    @default(false)
-  kycStatus KYCStatus  @default(PENDING)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id              String     @id @default(cuid())
+  name            String
+  email           String     @unique
+  phone           String?    @unique
+  password        String
+  role            UserRole   @default(CUSTOMER)
+  dob             DateTime?
+  locale          String     @default("en-AE")
+  verified        Boolean    @default(false)
+  kycStatus       KYCStatus  @default(PENDING)
+  kycApprovedAt   DateTime?
+  kycRejectedAt   DateTime?
+  status          UserStatus @default(ACTIVE)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   // Relations
   vendor    Vendor?
@@ -31,6 +34,12 @@ model User {
 
   @@index([email])
   @@index([role])
+  @@index([status])
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
 }
 
 enum UserRole {
@@ -120,6 +129,10 @@ model Product {
   images      String[] // JSON array URLs
   sku         String?  @unique
   isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  deletedAt   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -129,6 +142,7 @@ model Product {
   @@index([vendorId])
   @@index([type])
   @@index([isActive])
+  @@index([isFeatured])
 }
 
 enum ProductType {
@@ -154,6 +168,10 @@ model Order {
   deliveryDate    DateTime?
   pickupDate      DateTime?
   notes           String?
+  acceptedAt      DateTime?
+  cancelledAt     DateTime?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -228,6 +246,7 @@ model Settlement {
   amount      Decimal  @db.Decimal(10, 2)
   commission  Decimal  @db.Decimal(10, 2)
   status      SettlementStatus @default(PENDING)
+  paidAt      DateTime?
   createdAt   DateTime @default(now())
 
   @@index([vendorId])
@@ -255,4 +274,50 @@ model Address {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  data      String?  // JSON metadata
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  action       String
+  resourceType String
+  resourceId   String?
+  beforeState  String?  // JSON
+  afterState   String?  // JSON
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([resourceType])
+  @@index([action])
+  @@index([createdAt])
 }

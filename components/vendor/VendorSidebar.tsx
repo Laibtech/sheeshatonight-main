@@ -2,7 +2,8 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, ShoppingCart, Package, BarChart3, Wallet, MessageSquare, Zap, Bell, Settings, LogOut, Menu, X } from 'lucide-react';
+import Image from 'next/image';
+import { LayoutDashboard, ShoppingCart, Package, BarChart3, Wallet, MessageSquare, Zap, Bell, Settings, LogOut, Menu, X, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
@@ -21,8 +22,6 @@ const VENDOR_NAVIGATION = [
   { label: 'Notifications', href: '/vendor/notifications', icon: Bell },
   { label: 'Settings', href: '/vendor/settings', icon: Settings },
 ];
-
-import { Users } from 'lucide-react';
 
 export const VendorSidebar: React.FC = () => {
   const pathname = usePathname();
@@ -70,8 +69,17 @@ export const VendorSidebar: React.FC = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex-col p-6 z-40">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-slate-50 to-white border-r border-slate-200 flex-col p-6 z-40">
         <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+            />
+          </div>
           <h2 className="text-xl font-black text-slate-900">Vendor Portal</h2>
           <p className="text-xs text-slate-500 mt-1">Seller Dashboard</p>
         </div>
@@ -81,9 +89,18 @@ export const VendorSidebar: React.FC = () => {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-40">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200 z-40">
         <div className="flex items-center justify-between h-16 px-4">
-          <h1 className="text-xl font-black text-slate-900">Vendor</h1>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <h1 className="text-xl font-black text-slate-900">Vendor</h1>
+          </div>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="p-2 hover:bg-slate-100 rounded-lg"
@@ -94,7 +111,7 @@ export const VendorSidebar: React.FC = () => {
 
         {/* Mobile Navigation */}
         {mobileOpen && (
-          <nav className="bg-white border-t border-slate-200 p-4 space-y-2 max-h-96 overflow-y-auto">
+          <nav className="bg-gradient-to-b from-slate-50 to-white border-t border-slate-200 p-4 space-y-2 max-h-96 overflow-y-auto">
             <NavContent />
           </nav>
         )}
