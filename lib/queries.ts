@@ -497,6 +497,6 @@ export async function getDashboardStats() {
     totalVendors,
     totalOrders,
     totalProducts,
-    totalRevenue: revenueData._sum.totalAmount ? Number(revenueData._sum.totalAmount) : 0,
+    totalRevenue: revenueData._sum.totalAmount || 0,
   };
 }

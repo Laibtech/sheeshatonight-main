@@ -204,15 +204,13 @@ export function formatDisplayDate(date: Date | string): string {
  */
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const ips = forwardedFor.split(',');
-    if (ips.length > 0 && ips[0]) {
-      return ips[0].trim();
-    }
+  if (typeof forwardedFor === 'string' && forwardedFor.length > 0) {
+    const first = forwardedFor.split(',')[0];
+    return first ? first.trim() : 'unknown';
   }
 
   const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
+  if (typeof realIp === 'string' && realIp.length > 0) {
     return realIp.trim();
   }
 
@@ -445,11 +443,13 @@ export function normalizeEmail(email: string): string {
  * Mask sensitive email (e.g., "user@example.com" -> "u***@example.com")
  */
 export function maskEmail(email: string): string {
-  const [username, domain] = email.split('@');
-  if (!username || !domain || username.length <= 1) {
-    return email;
+  const parts = email.split('@');
+  const username = parts[0] || '';
+  const domain = parts[1] || '';
+  if (username.length <= 1) {
+    return `*@${domain}`;
   }
-  return `${username[0]}${'*'.repeat(username.length - 2)}@${domain}`;
+  return `${username[0]}${'*'.repeat(Math.max(0, username.length - 2))}@${domain}`;
 }
 
 /**

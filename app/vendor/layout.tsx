@@ -1,8 +1,18 @@
 'use client';
 
-import React from 'react';
-import { RoleGuard } from '@/components/RoleGuard';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { VendorDashboardLayout } from '@/components/VendorDashboardLayout';
 
-export default function VendorLayout({ children }: { children: React.ReactNode }) {
-  return <RoleGuard allowedRoles={['VENDOR']}>{children}</RoleGuard>;
+export default function VendorLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ProtectedRoute allowedRoles={['VENDOR']}>
+      <VendorDashboardLayout>
+        {children}
+      </VendorDashboardLayout>
+    </ProtectedRoute>
+  );
 }

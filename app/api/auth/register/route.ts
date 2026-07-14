@@ -1,67 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/db';
+import { hashPassword, validateRegisterInput } from '@/lib/auth';
 import { generateToken } from '@/lib/jwt';
-import { setAuthCookie, errorResponse, successResponse } from '@/lib/middleware';
-import { registerSchema, formatZodErrors } from '@/lib/validation';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { getClientIp, createAuditLog } from '@/lib/utils';
+import { setAuthCookie } from '@/lib/middleware';
 
+/**
+ * POST /api/auth/register
+ * Register a new user
+ */
 export async function POST(request: NextRequest) {
   try {
-    // Apply rate limiting: 10 registrations per hour
-    const ip = getClientIp(request);
-    const rateLimitResult = checkRateLimit(ip, 'register', 10, 60 * 60 * 1000);
-    
-    if (!rateLimitResult.success) {
-      return errorResponse('Too many registration attempts. Try again later.', 429);
-    }
-
-    // Parse and validate request body
     const body = await request.json();
-    const validation = registerSchema.safeParse(body);
+    const { name, email, password, confirmPassword, role } = body;
 
-    if (!validation.success) {
-      const errors = formatZodErrors(validation.error.errors);
-      return errorResponse('Validation failed', 400, undefined, errors);
-    }
-
-    const { name, email, password, phone } = validation.data;
-
-    // Check for existing user with same email or phone
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, ...(phone ? [{ phone }] : [])],
-      },
-    });
-
-    if (existingUser) {
-      return errorResponse(
-        existingUser.email === email ? 'Email already registered' : 'Phone already registered',
-        409
+    // Validate input
+    const validation = validateRegisterInput({ name, email, password, confirmPassword });
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
       );
     }
 
-    // Hash password with bcrypt (12 rounds as per requirements)
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    // Create user in database
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email already registered' },
+        { status: 409 }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // Create user with role (default to CUSTOMER if not provided)
+    const userRole = role && ['CUSTOMER', 'VENDOR', 'ADMIN'].includes(role) ? role : 'CUSTOMER';
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        phone: phone || null,
-        role: 'CUSTOMER', // Default role
-        status: 'ACTIVE',
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        phone: true,
-        createdAt: true,
+        role: userRole as any,
       },
     });
 
@@ -72,28 +56,28 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
 
-    // Create audit log entry
-    await createAuditLog(
-      user.id,
-      'USER_REGISTERED',
-      'User',
-      user.id,
-      null,
-      { email: user.email, role: user.role },
-      request
+    // Create response and set auth cookie
+    const response = NextResponse.json(
+      {
+        success: true,
+        message: 'Registration successful',
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      },
+      { status: 201 }
     );
 
-    // Return success response with user data (excluding password)
-    const response = successResponse(
-      { user },
-      'Registration successful',
-      201
-    );
-
-    // Set HttpOnly secure cookie with JWT token
     return setAuthCookie(token, response);
   } catch (error) {
     console.error('Register error:', error);
-    return errorResponse('Registration failed', 500);
+    return NextResponse.json(
+      { error: 'Registration failed' },
+      { status: 500 }
+    );
   }
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { VendorSidebar } from '@/components/vendor/VendorSidebar';
 import { DataTable } from '@/components/DataTable';
 import { Sparkles, Tag, Gift } from 'lucide-react';
 
@@ -19,9 +18,7 @@ export default function VendorPromotions() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <VendorSidebar />
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
+    <div className="bg-slate-50">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -65,7 +62,6 @@ export default function VendorPromotions() {
             />
           </div>
         </div>
-      </main>
     </div>
   );
 }

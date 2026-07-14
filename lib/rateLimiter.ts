@@ -130,8 +130,8 @@ if (typeof window === 'undefined') {
   setInterval(() => {
     const now = Date.now();
     Object.keys(store).forEach((key) => {
-      const record = store[key];
-      if (record && record.resetTime < now) {
+      const entry = store[key];
+      if (entry && entry.resetTime < now) {
         delete store[key];
       }
     });

@@ -1,15 +1,12 @@
 'use client';
 
 import React from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { StatCard } from '@/components/StatCard';
 import { Wallet, PieChart, Receipt, CreditCard } from 'lucide-react';
 
 export default function AdminFinance() {
   return (
-    <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
+    <div className="bg-slate-50">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="mb-8">
             <p className="text-sm uppercase tracking-[0.3em] text-amber-500 font-semibold">Finance</p>
@@ -61,7 +58,6 @@ export default function AdminFinance() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

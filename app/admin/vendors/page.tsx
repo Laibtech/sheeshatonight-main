@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRoleGuard } from '@/lib/hooks/useRoleGuard';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { Check, X, Clock, Store, User, Trash2 } from 'lucide-react';
 import ActionModal from '@/components/ActionModal';
 import { useActions } from '@/lib/hooks/useActions';
@@ -97,7 +96,6 @@ export default function AdminVendors() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
       <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-0">
         <div className="p-6 max-w-7xl mx-auto">
           <h1 className="text-3xl font-black text-slate-900 mb-2">Vendors Management</h1>

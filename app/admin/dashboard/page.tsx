@@ -1,183 +1,176 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRoleGuard } from '@/lib/hooks/useRoleGuard';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { BarChart3, ShoppingCart, Store, Users, TrendingUp, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import { DashboardHeader } from '@/components/DashboardHeader';
+import { GlassCard } from '@/components/GlassCard';
+import { api } from '@/lib/api';
+import { 
+  Users, Store, DollarSign, ArrowUpRight, 
+  Activity, Clock, AlertCircle, ShieldCheck 
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
-  const { isAllowed, userRole } = useRoleGuard(['ADMIN']);
+  const { isAllowed } = useRoleGuard(['ADMIN']);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAllowed) return;
+    setLoading(true);
+    api.admin.getPendingVendors()
+      .then((res) => {
+        if (res.success) {
+          setPendingCount(res.data.length);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching pending count', err);
+        setError('Failed to fetch real-time pending KYC counts.');
+      })
+      .finally(() => setLoading(false));
+  }, [isAllowed]);
 
   if (!isAllowed) {
     return null;
   }
 
+  const stats = [
+    { label: 'Total Platform Users', value: '1,582', change: '+12% this month', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
+    { label: 'Active Vendors', value: '342', change: '+8% this month', icon: Store, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200' },
+    { label: 'Platform Revenue', value: 'AED 2.4M', change: '+15% this month', icon: DollarSign, color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+    { label: 'Pending KYC Checks', value: loading ? '...' : pendingCount.toString(), change: 'Requires review', icon: ShieldCheck, color: 'text-red-650', bg: 'bg-red-50 border-red-200' },
+  ];
+
   return (
-    <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      <DashboardHeader title="Admin Workspace" />
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-0">
-        <div className="p-6 max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900">Admin Dashboard</h1>
-            <p className="text-slate-600 mt-1">Welcome back, Admin! Here's your platform overview.</p>
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-8">
+        
+        {/* Header Title */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900">Platform Analytics</h2>
+            <p className="text-slate-500 text-sm mt-1">Real-time marketplace oversight, verification queues, and performance</p>
           </div>
-
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Total Revenue */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-600 uppercase">Total Revenue</h3>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <TrendingUp size={20} className="text-green-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-slate-900">AED 2.4M</p>
-              <p className="text-sm text-green-600 font-semibold mt-2">↑ 12% vs last month</p>
-            </div>
-
-            {/* Active Vendors */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-600 uppercase">Active Vendors</h3>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Store size={20} className="text-blue-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-slate-900">342</p>
-              <p className="text-sm text-blue-600 font-semibold mt-2">↑ 8% this month</p>
-            </div>
-
-            {/* Active Customers */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-600 uppercase">Active Customers</h3>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Users size={20} className="text-purple-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-slate-900">1,240</p>
-              <p className="text-sm text-purple-600 font-semibold mt-2">↑ 15% this month</p>
-            </div>
-
-            {/* Total Orders */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-600 uppercase">Total Orders</h3>
-                <div className="p-3 bg-amber-100 rounded-full">
-                  <ShoppingCart size={20} className="text-amber-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-black text-slate-900">8,542</p>
-              <p className="text-sm text-amber-600 font-semibold mt-2">↑ 24% this month</p>
-            </div>
-          </div>
-
-          {/* Action Alerts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Pending Approvals */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <AlertCircle className="text-orange-600" size={24} />
-                <h2 className="text-lg font-bold text-slate-900">Pending Approvals</h2>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Vendor KYC Approvals</p>
-                    <p className="text-xs text-slate-500">23 pending vendors</p>
-                  </div>
-                  <button className="px-3 py-1 bg-orange-600 text-white text-xs font-semibold rounded-lg hover:bg-orange-700 transition">
-                    Review
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Product Approvals</p>
-                    <p className="text-xs text-slate-500">45 pending products</p>
-                  </div>
-                  <button className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition">
-                    Review
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Support Tickets */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <AlertCircle className="text-red-600" size={24} />
-                <h2 className="text-lg font-bold text-slate-900">Support Tickets</h2>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">High Priority</p>
-                    <p className="text-xs text-slate-500">12 urgent tickets</p>
-                  </div>
-                  <button className="px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition">
-                    Handle
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Open Tickets</p>
-                    <p className="text-xs text-slate-500">89 open tickets</p>
-                  </div>
-                  <button className="px-3 py-1 bg-yellow-600 text-white text-xs font-semibold rounded-lg hover:bg-yellow-700 transition">
-                    View
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-6">Recent Orders</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Order ID</th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Customer</th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Vendor</th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Amount</th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { id: 'ORD-001', customer: 'Ahmed Al-Mansouri', vendor: 'Bespoke Sheesha', amount: 'AED 450', status: 'Delivered' },
-                    { id: 'ORD-002', customer: 'Fatima Al-Khaleej', vendor: 'The Ember Room', amount: 'AED 280', status: 'In Transit' },
-                    { id: 'ORD-003', customer: 'Mohammed Hassan', vendor: 'Luxury Lounge', amount: 'AED 520', status: 'Preparing' },
-                  ].map((order) => (
-                    <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="py-3 px-4 font-semibold text-slate-900">{order.id}</td>
-                      <td className="py-3 px-4 text-slate-600">{order.customer}</td>
-                      <td className="py-3 px-4 text-slate-600">{order.vendor}</td>
-                      <td className="py-3 px-4 font-semibold text-amber-600">{order.amount}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
-                          order.status === 'In Transit' ? 'bg-blue-100 text-blue-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          <div className="flex items-center gap-2 text-xs text-slate-600 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span>API Gateway Node Active</span>
           </div>
         </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <GlassCard key={idx} className="border-slate-200 bg-white/40 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</span>
+                    <div className={`p-2.5 rounded-xl border ${stat.color} ${stat.bg}`}>
+                      <Icon size={16} />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-black text-slate-900">{stat.value}</p>
+                </div>
+                <p className="text-xs text-slate-500 mt-4 font-semibold">{stat.change}</p>
+              </GlassCard>
+            );
+          })}
+        </div>
+
+        {/* Dashboard Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Quick Actions Panel */}
+          <GlassCard className="lg:col-span-2 p-6 border-slate-205 bg-white/40 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Activity size={18} className="text-amber-600" />
+                Oversight Queues
+              </h3>
+              <span className="text-xs text-slate-400">Awaiting Action</span>
+            </div>
+
+            {error && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                <AlertCircle size={14} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-white/60 border border-slate-200 rounded-2xl shadow-sm">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-slate-900">Vendor Registration Verification</p>
+                  <p className="text-xs text-slate-500">{loading ? 'Loading...' : `${pendingCount} vendors in validation queue`}</p>
+                </div>
+                <Link 
+                  href="/admin/vendors"
+                  className="px-4 py-2 bg-slate-100 border border-slate-200 text-amber-700 font-bold hover:bg-slate-200 hover:text-amber-800 rounded-xl text-xs transition flex items-center gap-1"
+                >
+                  Verify Now
+                  <ArrowUpRight size={14} />
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white/60 border border-slate-200 rounded-2xl shadow-sm">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-slate-900">Tobacco Licensing KYC Reviews</p>
+                  <p className="text-xs text-slate-500">Requires regulatory age-gate auditing</p>
+                </div>
+                <Link 
+                  href="/admin/kyc"
+                  className="px-4 py-2 bg-slate-100 border border-slate-200 text-amber-700 font-bold hover:bg-slate-200 hover:text-amber-800 rounded-xl text-xs transition flex items-center gap-1"
+                >
+                  Audit KYC
+                  <ArrowUpRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Quick Logs Panel */}
+          <GlassCard className="p-6 border-slate-205 bg-white/40 shadow-sm space-y-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Clock size={18} className="text-amber-600" />
+              Live Operations
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 text-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></div>
+                <div>
+                  <p className="font-bold text-slate-900">Vendor Approved</p>
+                  <p className="text-slate-500 mt-0.5">Bespoke Sheesha Co. status changed to APPROVED</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 text-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></div>
+                <div>
+                  <p className="font-bold text-slate-900">New Checkout Placed</p>
+                  <p className="text-slate-500 mt-0.5">User user_123 checked out order ORD-2026-905</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 text-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
+                <div>
+                  <p className="font-bold text-slate-900">Age verification check</p>
+                  <p className="text-slate-500 mt-0.5">Audit log node verified session check client request</p>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        </div>
+
       </main>
     </div>
   );
 }
+

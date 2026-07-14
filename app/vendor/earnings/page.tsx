@@ -2,14 +2,11 @@
 
 import React from 'react';
 import { TrendingUp, Clock3, ShieldCheck } from 'lucide-react';
-import { VendorSidebar } from '@/components/vendor/VendorSidebar';
 import { StatCard } from '@/components/StatCard';
 
 export default function VendorEarnings() {
   return (
-    <div className="flex h-screen bg-slate-50">
-      <VendorSidebar />
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
+    <div className="bg-slate-50">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="mb-8">
             <p className="text-sm uppercase tracking-[0.3em] text-amber-500 font-semibold">Earnings</p>
@@ -39,7 +36,6 @@ export default function VendorEarnings() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

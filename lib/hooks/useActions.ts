@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { adminAPI, vendorAPI, orderAPI } from '@/lib/api-client';
 

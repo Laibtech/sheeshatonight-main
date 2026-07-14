@@ -7,7 +7,11 @@ const parseCookies = () => {
   return document.cookie.split(';').reduce<Record<string, string>>((acc, cookie) => {
     const [rawName, rawValue] = cookie.split('=');
     if (!rawName || !rawValue) return acc;
-    acc[rawName.trim()] = decodeURIComponent(rawValue.trim());
+    try {
+      acc[rawName.trim()] = decodeURIComponent(rawValue.trim());
+    } catch {
+      acc[rawName.trim()] = rawValue.trim();
+    }
     return acc;
   }, {});
 };

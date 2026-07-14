@@ -1,8 +1,15 @@
 'use client';
 
 import React from 'react';
-import { RoleGuard } from '@/components/RoleGuard';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminDashboardLayout } from '@/components/AdminDashboardLayout';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <RoleGuard allowedRoles={['ADMIN']}>{children}</RoleGuard>;
+  return (
+    <ProtectedRoute allowedRoles={['ADMIN']}>
+      <AdminDashboardLayout>
+        {children}
+      </AdminDashboardLayout>
+    </ProtectedRoute>
+  );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { DataTable } from '@/components/DataTable';
 import { StatCard } from '@/components/StatCard';
 import { ShieldCheck, Tag, Database, Trash2 } from 'lucide-react';
@@ -82,7 +81,6 @@ export default function AdminProducts() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
       <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between mb-8">

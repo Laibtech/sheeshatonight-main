@@ -75,23 +75,25 @@ async function apiRequest<T = any>(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
+    ...Object.fromEntries(new Headers(options.headers as HeadersInit)),
   };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
 
   try {
     const response = await fetch(url, {
       ...options,
-      headers: headers as HeadersInit,
+      headers,
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      const error = new ApiError(data.error || 'API request failed', response.status, data);
+      const error: ApiError = new Error(data.error || 'API request failed');
+      error.status = response.status;
+      error.response = data;
       throw error;
     }
 
@@ -100,7 +102,9 @@ async function apiRequest<T = any>(
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError('Network error', undefined, error);
+    const apiError: ApiError = new Error('Network error');
+    apiError.response = error;
+    throw apiError;
   }
 }
 
@@ -184,6 +188,30 @@ export const userAPI = {
 };
 
 /**
+ * Vendor API methods
+ */
+export const vendorAPI = {
+  async productAction(id: string, action: string): Promise<ApiResponse> {
+    return apiRequest(`/vendor/products/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  },
+};
+
+/**
+ * Order API methods
+ */
+export const orderAPI = {
+  async performAction(id: string, action: string): Promise<ApiResponse> {
+    return apiRequest(`/orders/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+  },
+};
+
+/**
  * Admin API methods
  */
 export const adminAPI = {
@@ -194,63 +222,24 @@ export const adminAPI = {
     return apiRequest('/admin/stats');
   },
 
-  /**
-   * Perform action on vendor (approve, reject, activate, deactivate)
-   */
-  async vendorAction(vendorId: string, action: string): Promise<ApiResponse> {
-    return apiRequest(`/admin/vendors/${vendorId}`, {
+  async vendorAction(id: string, action: string): Promise<ApiResponse> {
+    return apiRequest(`/admin/vendors/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ vendorId, action }),
+      body: JSON.stringify({ vendorId: id, action }),
     });
   },
 
-  /**
-   * Perform action on product (approve, reject, delete, feature)
-   */
-  async productAction(productId: string, action: string): Promise<ApiResponse> {
-    return apiRequest(`/admin/products/${productId}`, {
+  async productAction(id: string, action: string): Promise<ApiResponse> {
+    return apiRequest(`/admin/products/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ productId, action }),
+      body: JSON.stringify({ productId: id, action }),
     });
   },
 
-  /**
-   * Perform action on user (approve-kyc, reject-kyc, activate, deactivate, delete)
-   */
-  async userAction(userId: string, action: string): Promise<ApiResponse> {
-    return apiRequest(`/admin/users/${userId}`, {
+  async userAction(id: string, action: string): Promise<ApiResponse> {
+    return apiRequest(`/admin/users/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ userId, action }),
-    });
-  },
-};
-
-/**
- * Vendor API methods
- */
-export const vendorAPI = {
-  /**
-   * Perform action on vendor's product (toggle-active, delete, feature)
-   */
-  async productAction(productId: string, action: string): Promise<ApiResponse> {
-    return apiRequest(`/vendor/products/${productId}`, {
-      method: 'POST',
-      body: JSON.stringify({ productId, action }),
-    });
-  },
-};
-
-/**
- * Order API methods
- */
-export const orderAPI = {
-  /**
-   * Perform action on order (accept, decline, cancel, ship, deliver)
-   */
-  async performAction(orderId: string, action: string): Promise<ApiResponse> {
-    return apiRequest(`/orders/${orderId}`, {
-      method: 'POST',
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ userId: id, action }),
     });
   },
 };
@@ -301,9 +290,9 @@ export function isForbiddenError(error: any): boolean {
 export default {
   auth: authAPI,
   user: userAPI,
-  admin: adminAPI,
   vendor: vendorAPI,
   order: orderAPI,
+  admin: adminAPI,
   getToken,
   setToken,
   clearToken,

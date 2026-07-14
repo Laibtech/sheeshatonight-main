@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRoleGuard } from '@/lib/hooks/useRoleGuard';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { DataTable } from '@/components/DataTable';
 import { StatCard } from '@/components/StatCard';
 import { ShoppingCart, TrendingUp, Clock, Trash2 } from 'lucide-react';
@@ -116,7 +115,6 @@ export default function AdminOrders() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      <AdminSidebar />
       <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-0">
         <div className="p-6 max-w-7xl mx-auto">
           <h1 className="text-3xl font-black text-slate-900 mb-2">Orders Management</h1>

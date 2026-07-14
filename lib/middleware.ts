@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from './jwt';
-import { verifyTokenAndGetUser } from './auth';
+import { verifyToken, extractToken } from './jwt';
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
     userId: string;
     email: string;
     role: string;
-    name: string;
     vendorId?: string;
+    vendor?: {
+      id: string;
+      name: string;
+      slug: string;
+    };
   };
 }
 
+/**
+ * Middleware to check authentication
+ */
 export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
   return async (req: AuthenticatedRequest) => {
     try {
-      const token = req.cookies.get('auth_token')?.value;
+      const authHeader = req.headers.get('Authorization');
+      const token = extractToken(authHeader || '');
 
       if (!token) {
         return NextResponse.json(
-          { success: false, error: 'Authentication required' },
+          { error: 'Unauthorized: No token provided' },
           { status: 401 }
         );
       }
@@ -27,43 +34,30 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextRes
       const decoded = verifyToken(token);
       if (!decoded) {
         return NextResponse.json(
-          { success: false, error: 'Invalid or expired token' },
+          { error: 'Unauthorized: Invalid token' },
           { status: 401 }
         );
       }
 
-      const user = await verifyTokenAndGetUser(token);
-      if (!user) {
-        return NextResponse.json(
-          { success: false, error: 'User not found or inactive' },
-          { status: 401 }
-        );
-      }
-
-      req.user = {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        vendorId: user.vendor?.id,
-      };
-
+      req.user = decoded;
       return handler(req);
     } catch (error) {
-      console.error('Auth middleware error:', error);
       return NextResponse.json(
-        { success: false, error: 'Internal server error' },
+        { error: 'Internal server error' },
         { status: 500 }
       );
     }
   };
 }
 
+/**
+ * Middleware to check if user is admin
+ */
 export function withAdmin(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
   return withAuth(async (req: AuthenticatedRequest) => {
     if (req.user?.role !== 'ADMIN') {
       return NextResponse.json(
-        { success: false, error: 'Admin access required' },
+        { error: 'Forbidden: Admin role required' },
         { status: 403 }
       );
     }
@@ -71,35 +65,29 @@ export function withAdmin(handler: (req: AuthenticatedRequest) => Promise<NextRe
   });
 }
 
+/**
+ * Middleware to check if user is admin or staff
+ */
+export function withAdminOrStaff(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
+  return withAuth(async (req: AuthenticatedRequest) => {
+    if (req.user?.role !== 'ADMIN' && req.user?.role !== 'STAFF') {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin or Staff role required' },
+        { status: 403 }
+      );
+    }
+    return handler(req);
+  });
+}
+
+/**
+ * Middleware to check if user is vendor
+ */
 export function withVendor(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
   return withAuth(async (req: AuthenticatedRequest) => {
     if (req.user?.role !== 'VENDOR') {
       return NextResponse.json(
-        { success: false, error: 'Vendor access required' },
-        { status: 403 }
-      );
-    }
-    return handler(req);
-  });
-}
-
-export function withCustomer(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
-  return withAuth(async (req: AuthenticatedRequest) => {
-    if (req.user?.role !== 'CUSTOMER') {
-      return NextResponse.json(
-        { success: false, error: 'Customer access required' },
-        { status: 403 }
-      );
-    }
-    return handler(req);
-  });
-}
-
-export function withRole(role: string, handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
-  return withAuth(async (req: AuthenticatedRequest) => {
-    if (req.user?.role !== role) {
-      return NextResponse.json(
-        { success: false, error: `${role} access required` },
+        { error: 'Forbidden: Vendor role required' },
         { status: 403 }
       );
     }
@@ -110,15 +98,48 @@ export function withRole(role: string, handler: (req: AuthenticatedRequest) => P
 /**
  * Error response helper
  */
-export function errorResponse(message: string, status: number = 400, code?: string, details?: Record<string, any>) {
-  return NextResponse.json({ success: false, error: message, code, ...(details && { details }) }, { status });
+export function errorResponse(
+  message: string,
+  status: number = 400,
+  code?: string,
+  details?: Record<string, any>
+) {
+  const responseBody: any = { error: message };
+
+  if (code) {
+    responseBody.code = code;
+  }
+  if (details) {
+    responseBody.details = details;
+  }
+
+  return NextResponse.json(responseBody, { status });
 }
 
 /**
  * Success response helper
  */
-export function successResponse(data: any, message?: string, status: number = 200) {
-  return NextResponse.json({ success: true, data, message }, { status });
+export function successResponse(data: any, messageOrStatus: string | number = 200, status?: number) {
+  let responseStatus = 200;
+  let message: string | undefined;
+
+  if (typeof messageOrStatus === 'number') {
+    responseStatus = messageOrStatus;
+  } else {
+    message = messageOrStatus;
+    responseStatus = status ?? 200;
+  }
+
+  const responseBody: any = {
+    success: true,
+    data,
+  };
+
+  if (message) {
+    responseBody.message = message;
+  }
+
+  return NextResponse.json(responseBody, { status: responseStatus });
 }
 
 /**
@@ -128,7 +149,7 @@ export function setAuthCookie(token: string, response: NextResponse) {
   response.cookies.set('auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: '/',
   });
@@ -142,7 +163,7 @@ export function clearAuthCookie(response: NextResponse) {
   response.cookies.set('auth_token', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 0,
     path: '/',
   });

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { VendorSidebar } from '@/components/vendor/VendorSidebar';
 import { MessageSquare } from 'lucide-react';
 
 const threads = [
@@ -16,9 +15,7 @@ export default function VendorMessages() {
   const activeThread = threads.find((thread) => thread.id === selectedId) ?? threads[0]!;
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <VendorSidebar />
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
+    <div className="bg-slate-50">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="mb-8 flex items-center justify-between gap-4">
             <div>
@@ -73,7 +70,6 @@ export default function VendorMessages() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

@@ -1,41 +1,48 @@
-import { NextResponse } from 'next/server';
-import { withAdmin, successResponse, errorResponse, AuthenticatedRequest } from '@/lib/middleware';
-import { prisma } from '@/lib/prisma';
-import { formatPaginatedResponse } from '@/lib/utils';
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { verifyToken, extractToken } from '@/lib/jwt';
 
 /**
  * GET /api/users
  * Get all users (admin only)
  */
-export const GET = withAdmin(async (req: AuthenticatedRequest) => {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
-    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
-    const search = searchParams.get('search');
-    const role = searchParams.get('role');
-    const status = searchParams.get('status');
-    const skip = (page - 1) * pageSize;
+    const authHeader = request.headers.get('Authorization');
+    const token = extractToken(authHeader || '');
 
-    // Build filter conditions
-    const where: any = {};
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-    if (role && ['CUSTOMER', 'VENDOR', 'ADMIN'].includes(role)) {
-      where.role = role;
-    }
-    if (status && ['ACTIVE', 'INACTIVE'].includes(status)) {
-      where.status = status;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Unauthorized: No token provided' },
+        { status: 401 }
+      );
     }
 
-    // Fetch users and count
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is admin
+    if (decoded.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Forbidden: Admin role required' },
+        { status: 403 }
+      );
+    }
+
+    // Get pagination parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+
+    // Fetch users with pagination
     const [users, total] = await Promise.all([
       prisma.user.findMany({
-        where,
         select: {
           id: true,
           name: true,
@@ -44,23 +51,34 @@ export const GET = withAdmin(async (req: AuthenticatedRequest) => {
           role: true,
           verified: true,
           kycStatus: true,
-          status: true,
           createdAt: true,
           updatedAt: true,
         },
         skip,
-        take: pageSize,
+        take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.user.count({ where }),
+      prisma.user.count(),
     ]);
 
     return NextResponse.json(
-      formatPaginatedResponse(users, page, pageSize, total, 'Users retrieved successfully'),
+      {
+        success: true,
+        data: users,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      },
       { status: 200 }
     );
   } catch (error) {
     console.error('Get users error:', error);
-    return errorResponse('Failed to fetch users', 500);
+    return NextResponse.json(
+      { error: 'Failed to fetch users' },
+      { status: 500 }
+    );
   }
-});
+}

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthHydration } from '@/components/AuthHydration';
+import { LayoutWrapper } from '@/components/LayoutWrapper';
+import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
   title: 'SheeshaTonight - Premium Sheesha Rental',
@@ -14,9 +16,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased">
-        <AuthHydration />
-        {children}
+      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen">
+        <AuthProvider>
+          <AuthHydration />
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,15 +1,12 @@
 'use client';
 
 import React from 'react';
-import { VendorSidebar } from '@/components/vendor/VendorSidebar';
 import { StatCard } from '@/components/StatCard';
 import { TrendingUp, BarChart3, DollarSign } from 'lucide-react';
 
 export default function VendorAnalytics() {
   return (
-    <div className="flex h-screen bg-slate-50">
-      <VendorSidebar />
-      <main className="flex-1 overflow-y-auto lg:ml-64 pt-20 lg:pt-10">
+    <div className="bg-slate-50">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           <div className="mb-8">
             <p className="text-sm uppercase tracking-[0.3em] text-amber-500 font-semibold">Vendor Analytics</p>
@@ -47,7 +44,6 @@ export default function VendorAnalytics() {
             </div>
           </div>
         </div>
-      </main>
     </div>
   );
 }

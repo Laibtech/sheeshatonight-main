@@ -69,12 +69,15 @@ const ActionModal: React.FC<ActionModalProps> = ({
 
   return (
     <Modal open={isOpen} onClose={onClose} title={title}>
-      <p className="text-gray-600 dark:text-gray-300 mb-6">
-        {message}
-        {itemName && <span className="font-semibold block mt-2">"{itemName}"</span>}
-      </p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h2>
+        
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          {message}
+          {itemName && <span className="font-semibold block mt-2">"{itemName}"</span>}
+        </p>
 
-      <div className="flex gap-3 justify-end">
+        <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
             disabled={isProcessing}
@@ -91,10 +94,11 @@ const ActionModal: React.FC<ActionModalProps> = ({
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
             } disabled:opacity-50`}
           >
-            {isProcessing && <Loader />}
+            {isProcessing && <Loader size={16} />}
             {confirmText || getDefaultText()}
           </button>
         </div>
+      </div>
     </Modal>
   );
 };

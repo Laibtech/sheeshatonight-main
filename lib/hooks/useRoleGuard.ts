@@ -1,3 +1,5 @@
+'use client';
+
 // Middleware for role-based route protection
 import { useAuthStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
@@ -15,7 +17,7 @@ export function useRoleGuard(allowedRoles: ('CUSTOMER' | 'VENDOR' | 'ADMIN')[]) 
 
     if (!allowedRoles.includes(userRole)) {
       const roleRoutes = {
-        CUSTOMER: '/customer/home',
+        CUSTOMER: '/dashboard',
         VENDOR: '/vendor/dashboard',
         ADMIN: '/admin/dashboard',
       };
