@@ -258,18 +258,19 @@ export default function AdminUsers() {
 
       <ActionModal
         isOpen={actionModal.isOpen}
+        onClose={() => setActionModal({ isOpen: false, type: '', userId: '', userName: '' })}
         title={`${actionModal.type.charAt(0).toUpperCase() + actionModal.type.slice(1)} User`}
         message={`Are you sure you want to ${actionModal.type} ${actionModal.userName}?`}
         confirmText={actionModal.type.charAt(0).toUpperCase() + actionModal.type.slice(1)}
         onConfirm={confirmAction}
-        onCancel={() => setActionModal({ isOpen: false, type: '', userId: '', userName: '' })}
-        variant={actionModal.type === 'delete' ? 'destructive' : 'primary'}
+        isDangerous={actionModal.type === 'delete'}
+        actionType={actionModal.type as any}
       />
 
       <Toast
-        isOpen={toastOpen}
+        open={toastOpen}
         message={toastMessage}
-        type={toastType}
+        variant={toastType}
         onClose={() => setToastOpen(false)}
       />
     </div>
