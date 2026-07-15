@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { withAuth, withAdmin, successResponse, errorResponse, AuthenticatedRequest } from '@/lib/middleware';
 import { prisma } from '@/lib/prisma';

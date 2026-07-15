@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/middleware';
 import { verifyTokenAndGetUser } from '@/lib/auth';

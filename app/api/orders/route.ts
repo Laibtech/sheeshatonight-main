@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { Decimal } from '@prisma/client/runtime/library';
 import { withAuth, successResponse, errorResponse, AuthenticatedRequest } from '@/lib/middleware';
