@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
@@ -9,7 +9,7 @@ import { setSessionCookie } from '@/lib/session';
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setLoggedIn, setUserRole, setUserData } = useAuthStore();
@@ -218,5 +218,13 @@ export default function LoginPage() {
         <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-xl" />
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
